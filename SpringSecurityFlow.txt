@@ -1,0 +1,227 @@
+
+Understanding Authentication and Authorization in Spring Security
+Authentication:
+
+Who are you?
+The system verifies the user's credentials (email and password) against the database.
+If valid, Spring Security creates an Authentication object.
+Authorization:
+
+What are you allowed to do?
+Based on user roles (ROLE_USER, ROLE_ADMIN), the system checks whether the user is permitted to access a particular API.
+
+
+Flow of Authentication and Authorization
+User makes a request (with credentials if required).
+Spring Security intercepts the request and checks the credentials.
+If authentication is needed, Spring Security calls the UserDetailsService to load user details from the database.
+The password is verified using BCryptPasswordEncoder.
+If authentication succeeds, Spring Security creates an Authentication object.
+Authorization checks: The system verifies if the user has access to the requested resource based on roles.
+If the user is authorized, access is granted; otherwise, a 403 error is returned.
+
+
+
+
++---------------------+
+|  User sends request |  
++---------+-----------+
+          |
+          v
++-------------------------+
+| Spring Security Filter  |
+| (Intercepts request)    |
++---------+---------------+
+          |
+          v
++-------------------------+
+| Authentication Provider |
+| (Checks credentials)    |
++---------+---------------+
+          |
+          v
++-------------------------+
+| UserDetailsService      |
+| (Loads user from DB)    |
++---------+---------------+
+          |
+          v
++-------------------------+
+| PasswordEncoder         |
+| (Verifies password)     |
++---------+---------------+
+          |
+          v
++--------------------------+
+|  Authentication Success? |
++-----------+--------------+
+            | YES  | NO
+            v      v
+     +------------+-------------+
+     | Create Authentication Obj| ----> User Authenticated ✅
+     +------------+-------------+
+                      |
+                      v
+     +-----------------------------+
+     | Authorization (Role Check)  |
+     +--------------+--------------+
+                      |
+                      v
+     +-------------------------+
+     | Access Granted (200 OK) | ✅
+     +-------------------------+
+
+
+
+
+
+package com.security.app.config;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true) // Enables method-level security
+public class SecurityConfig {
+
+    // 1. Define a PasswordEncoder Bean to hash passwords
+    @Bean
+    PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
+    }
+
+    // 2. Define a UserDetailsService Bean to fetch user details from DB
+    @Bean
+    UserDetailsService userDetailsService() {
+        return new CustomUserDetailsService();
+    }
+
+    // 3. Define an AuthenticationProvider to validate user credentials
+    @Bean
+    AuthenticationProvider authenticationProvider() {
+        DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+        authenticationProvider.setUserDetailsService(userDetailsService());
+        authenticationProvider.setPasswordEncoder(passwordEncoder());
+        return authenticationProvider;
+    }
+
+    // 4. Define a SecurityFilterChain to manage authentication & authorization
+    @Bean
+    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        http
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/user/**").hasRole("USER") // User APIs accessible to ROLE_USER
+                .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin APIs accessible to ROLE_ADMIN
+                .anyRequest().denyAll() // All other requests are denied
+            )
+            .httpBasic() // Enables Basic Authentication
+            .csrf(csrf -> csrf.disable()); // Disables CSRF for testing
+        return http.build();
+    }
+}
+
+
+package com.security.app.config;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Component;
+import java.util.Optional;
+
+import com.security.app.entity.User;
+import com.security.app.repository.UserRepo;
+
+@Component
+public class CustomUserDetailsService implements UserDetailsService {
+
+    @Autowired
+    private UserRepo userRepo;
+
+    // 5. Load user details from database by email (used during authentication)
+    @Override
+    public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
+        Optional<User> user = userRepo.findById(userEmail);
+        return user.map(CustomUserDetails::new)
+                .orElseThrow(() -> new UsernameNotFoundException("User Not Found"));
+    }
+}
+
+
+package com.security.app.config;
+
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.security.app.entity.User;
+
+public class CustomUserDetails implements UserDetails {
+    
+    private String email;
+    private String password;
+    private List<GrantedAuthority> authorities;
+
+    // 6. Constructor initializes user details
+    public CustomUserDetails(User user) {
+        this.email = user.getEmail();
+        this.password = user.getPassword();
+        this.authorities = Arrays.stream(user.getRole().split(","))
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authorities;
+    }
+
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
+}
