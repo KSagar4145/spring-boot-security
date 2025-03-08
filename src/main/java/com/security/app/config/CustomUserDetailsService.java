@@ -28,7 +28,7 @@ public class CustomUserDetailsService implements UserDetailsService{
 //	}
 	
 	
-	
+	// 5. Load user details from database by email (used during authentication)
 	@Override
 	public UserDetails loadUserByUsername(String userEmail) throws UsernameNotFoundException {
 	    System.out.println("🔍 Searching for user: " + userEmail);

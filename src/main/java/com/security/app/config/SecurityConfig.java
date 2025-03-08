@@ -22,15 +22,17 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity(prePostEnabled = true)// Enables method-level security
 public class SecurityConfig {
 
+	// 1. Define a PasswordEncoder Bean to hash passwords
 	@Bean
 	 PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
-	@Bean//Authentication first this will invoke
+	// 2. Define a UserDetailsService Bean to fetch user details from DB
+	@Bean
 	 UserDetailsService userDetailsService() {
 		System.err.println("Authentication userDetailsService!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
 		return new CustomUserDetailsService();
@@ -60,32 +62,36 @@ public class SecurityConfig {
 //		return new InMemoryUserDetailsManager(admin,user, raman);
 //	}
 	
+	
+	
+	// 3. Define an AuthenticationProvider to validate user credentials
+		@Bean
+		 AuthenticationProvider authenticationProvider() {
+		    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+		    authenticationProvider.setUserDetailsService(userDetailsService());
+		    authenticationProvider.setPasswordEncoder(passwordEncoder());
+		    return authenticationProvider;
+		}
+	
 
-	@Bean//Authorization Second this will invoke
+	// 4. Define a SecurityFilterChain to manage authentication & authorization
+	@Bean
 	 SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		System.err.println("Authorization securityFilterChain!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
 		http
 		.authorizeHttpRequests(auth-> auth
-		        .requestMatchers("/api/user/**").hasRole("USER")  // Only Admin can add users
-	            .requestMatchers("/api/admin/**").hasAnyRole("ADMIN") // Both can get users
+		        .requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")  // / User APIs accessible to ROLE_USER
+	            .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin APIs accessible to ROLE_ADMIN
 	         	//.anyRequest().authenticated()  // this anyRequest().authenticated() will allow all URL once the User and password is given. To avoid this using anyRequest().denyAll()
 	            .anyRequest().denyAll()
 	            )
-		 .httpBasic(Customizer.withDefaults()) // Updated to avoid deprecated method
+		 .httpBasic(Customizer.withDefaults()) // Updated to avoid deprecated method // Enables Basic Authentication
 	        .csrf(csrf -> csrf.disable());  // Disable CSRF for testing purposes
-		
-		
 	    return http.build();//SecurityFilterChain is interface
 	}
 	
 	
-	@Bean
-	 AuthenticationProvider authenticationProvider() {
-	    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-	    authenticationProvider.setUserDetailsService(userDetailsService());
-	    authenticationProvider.setPasswordEncoder(passwordEncoder());
-	    return authenticationProvider;
-	}
+	
 
 
 }

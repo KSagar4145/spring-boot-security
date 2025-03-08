@@ -44,9 +44,8 @@ public class UserController {
     
     
     @GetMapping("/user/")
-    @PreAuthorize("hasAuthority('ROLE_USER')")
     public String start() {
-    	return "Welcome to Spring Security only by user";
+    	return "Welcome to Spring Security";
     }
 }
 

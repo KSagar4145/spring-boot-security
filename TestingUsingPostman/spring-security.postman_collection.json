@@ -1,0 +1,204 @@
+{
+	"info": {
+		"_postman_id": "7a5baca2-015d-4828-84f5-80bd18144a3e",
+		"name": "spring-security",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "26140754"
+	},
+	"item": [
+		{
+			"name": "getStartedUserRole",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"password": "userpass",
+						"username": "user@example.com"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8081/api/user/"
+			},
+			"response": []
+		},
+		{
+			"name": "getStartedAdminRole",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "admin@example.com",
+						"password": "adminpass"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"url": "http://localhost:8081/api/user/"
+			},
+			"response": []
+		},
+		{
+			"name": "getUserByEmailUserRole",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "user@example.com",
+						"password": "userpass"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/api/user/user@example.com"
+			},
+			"response": []
+		},
+		{
+			"name": "getUserByEmailAdminRole",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "admin@example.com",
+						"password": "adminpass"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/api/user/admin@example.com"
+			},
+			"response": []
+		},
+		{
+			"name": "getAllUserAdminRole",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "admin@example.com",
+						"password": "adminpass"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/api/admin/getAllUsers"
+			},
+			"response": []
+		},
+		{
+			"name": "getAllUserUserRole",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"password": "userpass",
+						"username": "user@example.com"
+					}
+				},
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/api/admin/getAllUsers"
+			},
+			"response": []
+		},
+		{
+			"name": "addUserAdminRole",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "admin@example.com",
+						"password": "adminpass"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"amit\",\r\n  \"email\": \"amit@example.com\",\r\n  \"password\": \"amitpass\",\r\n  \"role\": \"USER\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/api/admin/addUser"
+			},
+			"response": []
+		},
+		{
+			"name": "addUserUserRole",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": {
+						"username": "user@example.com",
+						"password": "userpass"
+					}
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Aarav\",\r\n  \"email\": \"aarav@example.com\",\r\n  \"password\": \"aarav@123\",\r\n  \"role\": \"USER\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "http://localhost:8081/api/admin/addUser"
+			},
+			"response": []
+		}
+	]
+}
