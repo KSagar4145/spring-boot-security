@@ -48,7 +48,7 @@ public class JwtService {
 	}
 
 	private <T>T extractCliam(String token, Function<Claims, T> claimResolver) {
-		final Claims claims = extarctAllClaims(token);
+		final Claims claims = extractAllClaims(token);
 		return claimResolver.apply(claims);
 	}
 
@@ -60,6 +60,8 @@ public class JwtService {
 	        .parseClaimsJws(token)  // Parse the JWT
 	        .getBody();  // Extract the claims (payload)
 	}
+	
+	
 
 	public String generateToken(String email) {
 		System.err.println("Generating token for email: " + email);
