@@ -7,6 +7,59 @@
 	},
 	"item": [
 		{
+			"name": "JWT",
+			"item": [
+				{
+					"name": "jwtLogin",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"admin@example.com\",\r\n    \"password\":\"adminpass\"\r\n}   ",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8081/api/authenticate"
+					},
+					"response": []
+				},
+				{
+					"name": "getStartedUsingJwtToken",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsImlhdCI6MTc0MTUwMDU3NCwiZXhwIjoxNzQxNTAyMzc0fQ.233DNIPsL7VUbshXnAqZNJJKShwixhwGNIVQE-MnE_M"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8081/api/user/"
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "getStartedUserRole",
 			"request": {
 				"auth": {

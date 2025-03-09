@@ -3,9 +3,11 @@ package com.security.app.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -78,8 +80,10 @@ public class SecurityConfig {
 	@Bean
 	 SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 		System.err.println("Authorization securityFilterChain!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
+		 System.err.println("Initializing security configuration...");
 		http
 		.authorizeHttpRequests(auth-> auth
+		        .requestMatchers("/api/authenticate").permitAll()  //bypass authentication for this endpoint
 		        .requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")  // / User APIs accessible to ROLE_USER
 	            .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin APIs accessible to ROLE_ADMIN
 	         	//.anyRequest().authenticated()  // this anyRequest().authenticated() will allow all URL once the User and password is given. To avoid this using anyRequest().denyAll()
@@ -87,7 +91,16 @@ public class SecurityConfig {
 	            )
 		 .httpBasic(Customizer.withDefaults()) // Updated to avoid deprecated method // Enables Basic Authentication
 	        .csrf(csrf -> csrf.disable());  // Disable CSRF for testing purposes
+		
+		 System.err.println("Security configuration setup complete!");
 	    return http.build();//SecurityFilterChain is interface
+	}
+	
+	
+	@Bean
+	AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+		
 	}
 	
 	
