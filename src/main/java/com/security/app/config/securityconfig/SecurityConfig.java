@@ -1,5 +1,6 @@
-package com.security.app.config;
+package com.security.app.config.securityconfig;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -13,6 +14,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -21,11 +23,18 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.security.app.config.securityconfig.jwt.JwtAuthFilter;
+import com.security.app.config.securityconfig.jwt.JwtUtil;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)// Enables method-level security
 public class SecurityConfig {
+	
+	@Autowired
+	private JwtAuthFilter jwtAuthenticationFilter;
 
 	// 1. Define a PasswordEncoder Bean to hash passwords
 	@Bean
@@ -89,14 +98,19 @@ public class SecurityConfig {
 		System.err.println("Initializing security configuration...");
 		http
 		.authorizeHttpRequests(auth-> auth
-				.requestMatchers("/api/authenticate").permitAll()  //bypass authentication for this endpoint
+				.requestMatchers("/api/login").permitAll()  //bypass authentication for this endpoint
 				.requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")  // / User APIs accessible to ROLE_USER
 				.requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin APIs accessible to ROLE_ADMIN
 				//.anyRequest().authenticated()  // this anyRequest().authenticated() will allow all URL once the User and password is given. To avoid this using anyRequest().denyAll()
 				.anyRequest().denyAll()
 				)
-		.httpBasic(Customizer.withDefaults()) // Updated to avoid deprecated method // Enables Basic Authentication
-		.csrf(csrf -> csrf.disable());  // Disable CSRF for testing purposes
+//		.httpBasic(Customizer.withDefaults()) // Updated to avoid deprecated method // Enables Basic Authentication
+//		.csrf(csrf -> csrf.disable());  // Disable CSRF for testing purposes
+		
+		.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Ensure stateless sessions
+        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) // Add JWT filter before UsernamePasswordAuthenticationFilter
+        .csrf(csrf -> csrf.disable());  // Disable CSRF for token-based authentication
+		
 
 		System.err.println("Security configuration setup complete!");
 		return http.build();//SecurityFilterChain is interface

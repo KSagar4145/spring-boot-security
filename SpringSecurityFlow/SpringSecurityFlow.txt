@@ -103,6 +103,26 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+//	@Bean//Authentication first this will invoke
+//	 UserDetailsService userDetailsService(PasswordEncoder encoder) {
+//		System.err.println("Authentication userDetailsService!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
+//		Used for InMemoryUserDetailsManager
+//		UserDetails admin = User
+//				.withUsername("admin")
+//				.password(encoder.encode("adminpass"))
+//				.roles("ADMIN")
+//				.build();
+//
+//		UserDetails user = User
+//				.withUsername("user")
+//				.password(encoder.encode("userpass"))
+//				.roles("USER")
+//				.build();
+//		
+//		return new InMemoryUserDetailsManager(admin,user);
+//	}
+
+
     // 2. Define a UserDetailsService Bean to fetch user details from DB
     @Bean
     UserDetailsService userDetailsService() {
@@ -117,8 +137,15 @@ public class SecurityConfig {
         authenticationProvider.setPasswordEncoder(passwordEncoder());
         return authenticationProvider;
     }
+    
+    // 4. AuthenticationManager which is required for handling authentication in Spring Security, 
+	@Bean
+	AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+		return authConfig.getAuthenticationManager();
+	}
+    
 
-    // 4. Define a SecurityFilterChain to manage authentication & authorization
+    // 5. Define a SecurityFilterChain to manage authentication & authorization
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
@@ -225,3 +252,100 @@ public class CustomUserDetails implements UserDetails {
         return true;
     }
 }
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+authenticationProvider()---->Provides user authentication logic using UserDetailsService and PasswordEncoder.
+authenticationManager()--->Retrieves the authentication manager from Spring Security's configuration.
+
+
+When a user tries to authenticate, AuthenticationManager:
+
+Calls DaoAuthenticationProvider to validate credentials.
+Uses UserDetailsService to retrieve user information.
+Uses PasswordEncoder to compare the stored password hash with the provided password.
+If authentication succeeds:
+
+A security context is created for the user.
+The user gains access to secured endpoints.
+If authentication fails:
+
+An exception is thrown, and authentication is denied.
+
+
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+Request Flow in Spring Security with Your Configuration
+When a user sends a request to your application, Spring Security processes it in the following order:
+
+1. Incoming HTTP Request
+The request reaches Spring Security’s filter chain.
+The SecurityFilterChain (securityFilterChain method) is responsible for intercepting and authorizing requests.
+2. Authentication Flow (When User Provides Credentials)
+SecurityFilterChain (Authorization)
+
+Calls authorizeHttpRequests(), which checks if the requested URL is permitted or requires authentication.
+If the request requires authentication, Spring Security invokes the AuthenticationManager.
+AuthenticationManager (authenticationManager Bean)
+
+Delegates authentication to the configured AuthenticationProvider.
+AuthenticationProvider (authenticationProvider Bean)
+
+Uses DaoAuthenticationProvider, which:
+Fetches user details via UserDetailsService (userDetailsService Bean).
+Compares the password using PasswordEncoder.
+UserDetailsService (userDetailsService Bean)
+
+Calls CustomUserDetailsService to load user details from the database.
+PasswordEncoder (passwordEncoder Bean)
+
+Hashes and verifies the password using BCryptPasswordEncoder.
+Success/Failure Response
+
+If authentication is successful, the user is granted access.
+If authentication fails, an error response is sent.
+
+
+         +----------------------+                 
+         |  Incoming HTTP Request |
+         +----------------------+                 
+                    |
+                    v
+     +----------------------------------+
+     | SecurityFilterChain (Authorization) |
+     +----------------------------------+
+                    |
+                    v
+   +--------------------------------------+
+   | AuthenticationManager (Delegation)  |
+   +--------------------------------------+
+                    |
+                    v
+   +--------------------------------------+
+   | AuthenticationProvider (Validation) |
+   |  (DaoAuthenticationProvider)       |
+   +--------------------------------------+
+                    |
+                    v
+   +--------------------------------------+
+   | UserDetailsService (Fetch User)      |
+   | (CustomUserDetailsService)           |
+   +--------------------------------------+
+                    |
+                    v
+   +--------------------------------------+
+   | PasswordEncoder (Verify Password)    |
+   | (BCryptPasswordEncoder)              |
+   +--------------------------------------+
+                    |
+                    v
+   +----------------------+
+   |  Access Granted?     |
+   |   Yes   |   No       |
+   +----------------------+
+       |         |
+       v         v
+  Authorized  Access Denied (403)
+  Response    Unauthorized (401)

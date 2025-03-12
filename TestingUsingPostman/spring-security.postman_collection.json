@@ -19,14 +19,14 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"admin@example.com\",\r\n    \"password\":\"adminpass\"\r\n}   ",
+							"raw": "// {\r\n//     \"email\": \"admin@example.com\",\r\n//     \"password\":\"adminpass\"\r\n// }   \r\n\r\n\r\n{\r\n    \"email\": \"user@example.com\",\r\n    \"password\":\"userpass\"\r\n}   ",
 							"options": {
 								"raw": {
 									"language": "json"
 								}
 							}
 						},
-						"url": "http://localhost:8081/api/authenticate"
+						"url": "http://localhost:8081/api/login"
 					},
 					"response": []
 				},
@@ -39,7 +39,7 @@
 						"auth": {
 							"type": "bearer",
 							"bearer": {
-								"token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhZG1pbkBleGFtcGxlLmNvbSIsImlhdCI6MTc0MTUwMDU3NCwiZXhwIjoxNzQxNTAyMzc0fQ.233DNIPsL7VUbshXnAqZNJJKShwixhwGNIVQE-MnE_M"
+								"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6InVzZXJAZXhhbXBsZS5jb20iLCJpYXQiOjE3NDE3ODU1NTMsImV4cCI6MTc0MTc4OTE1M30.pLYvwSu8WGEX0g03pLpAYliK34qfSEk3kw3HN305CwE"
 							}
 						},
 						"method": "GET",
@@ -54,6 +54,33 @@
 							}
 						},
 						"url": "http://localhost:8081/api/user/"
+					},
+					"response": []
+				},
+				{
+					"name": "getAllUserAdminRoleUsingJwtToken",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiVVNFUiIsInN1YiI6ImFkbWluQGV4YW1wbGUuY29tIiwiaWF0IjoxNzQxNzg1MTI0LCJleHAiOjE3NDE3ODg3MjR9.SYekfTG2qzxfYI29U_e2qsK8YyDiLzH9Ae5ofn5MnzQ"
+							}
+						},
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "http://localhost:8081/api/admin/getAllUsers"
 					},
 					"response": []
 				}

@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.security.app.entity.User;
 import com.security.app.entity.LoginDto;
-import com.security.app.service.JwtService;
 import com.security.app.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +26,6 @@ public class UserController {
 	@Autowired
 	private UserService userService;
 
-	@Autowired
-	private JwtService jwtService;
-	
-	@Autowired
-	private AuthenticationManager authenticationManager;
 
 	// Admin: Add a new user
 	@PostMapping("/admin/addUser")
@@ -61,26 +55,7 @@ public class UserController {
 	}
 
 
-	//JWT
-	@PostMapping("/authenticate")
-	public String authenticateAndGetToken(@RequestBody LoginDto loginDto) {
-		System.err.println("Received authentication request for email: " + loginDto.getEmail());
-		
-		Authentication authentication = authenticationManager
-		.authenticate(
-				new UsernamePasswordAuthenticationToken(
-						loginDto.getEmail(), loginDto.getPassword()));
-		
-		if(authentication.isAuthenticated()) {
-			String token = jwtService.generateToken(loginDto.getEmail());
-			System.err.println("Token sent in response: " + token);
-			return token;
-		}
-		else {
-			throw new UsernameNotFoundException("Invalid user request");
-		}
-		
-	}
+	
 
 }
 

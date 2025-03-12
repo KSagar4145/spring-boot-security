@@ -1,4 +1,4 @@
-package com.security.app.config;
+package com.security.app.config.securityconfig;
 
 import java.util.Optional;
 import java.util.function.Consumer;
