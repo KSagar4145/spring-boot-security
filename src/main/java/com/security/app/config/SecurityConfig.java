@@ -29,82 +29,78 @@ public class SecurityConfig {
 
 	// 1. Define a PasswordEncoder Bean to hash passwords
 	@Bean
-	 PasswordEncoder passwordEncoder() {
+	PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
 	}
 
 	// 2. Define a UserDetailsService Bean to fetch user details from DB
 	@Bean
-	 UserDetailsService userDetailsService() {
+	UserDetailsService userDetailsService() {
 		System.err.println("Authentication userDetailsService!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
 		return new CustomUserDetailsService();
 	}
-	
-//	@Bean//Authentication first this will invoke
-//	 UserDetailsService userDetailsService(PasswordEncoder encoder) {
-//		System.err.println("Authentication userDetailsService!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
-//		Used for InMemoryUserDetailsManager
-//		UserDetails admin = User
-//				.withUsername("admin")
-//				.password(encoder.encode("adminpass"))
-//				.roles("ADMIN")
-//				.build();
-//
-//		UserDetails user = User
-//				.withUsername("user")
-//				.password(encoder.encode("userpass"))
-//				.roles("USER")
-//				.build();
-//		
-//		UserDetails raman = User
-//				.withUsername("Raman")
-//				.password(encoder.encode("Raman@123"))
-//				.roles("USER")
-//				.build();
-//		return new InMemoryUserDetailsManager(admin,user, raman);
-//	}
-	
-	
-	
-	// 3. Define an AuthenticationProvider to validate user credentials
-		@Bean
-		 AuthenticationProvider authenticationProvider() {
-		    DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
-		    authenticationProvider.setUserDetailsService(userDetailsService());
-		    authenticationProvider.setPasswordEncoder(passwordEncoder());
-		    return authenticationProvider;
-		}
-	
 
-	// 4. Define a SecurityFilterChain to manage authentication & authorization
+	//	@Bean//Authentication first this will invoke
+	//	 UserDetailsService userDetailsService(PasswordEncoder encoder) {
+	//		System.err.println("Authentication userDetailsService!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
+	//		Used for InMemoryUserDetailsManager
+	//		UserDetails admin = User
+	//				.withUsername("admin")
+	//				.password(encoder.encode("adminpass"))
+	//				.roles("ADMIN")
+	//				.build();
+	//
+	//		UserDetails user = User
+	//				.withUsername("user")
+	//				.password(encoder.encode("userpass"))
+	//				.roles("USER")
+	//				.build();
+	//		
+	//		UserDetails raman = User
+	//				.withUsername("Raman")
+	//				.password(encoder.encode("Raman@123"))
+	//				.roles("USER")
+	//				.build();
+	//		return new InMemoryUserDetailsManager(admin,user, raman);
+	//	}
+
+
+
+	// 3. Define an AuthenticationProvider to validate user credentials
 	@Bean
-	 SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		System.err.println("Authorization securityFilterChain!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
-		 System.err.println("Initializing security configuration...");
-		http
-		.authorizeHttpRequests(auth-> auth
-		        .requestMatchers("/api/authenticate").permitAll()  //bypass authentication for this endpoint
-		        .requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")  // / User APIs accessible to ROLE_USER
-	            .requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin APIs accessible to ROLE_ADMIN
-	         	//.anyRequest().authenticated()  // this anyRequest().authenticated() will allow all URL once the User and password is given. To avoid this using anyRequest().denyAll()
-	            .anyRequest().denyAll()
-	            )
-		 .httpBasic(Customizer.withDefaults()) // Updated to avoid deprecated method // Enables Basic Authentication
-	        .csrf(csrf -> csrf.disable());  // Disable CSRF for testing purposes
-		
-		 System.err.println("Security configuration setup complete!");
-	    return http.build();//SecurityFilterChain is interface
+	AuthenticationProvider authenticationProvider() {
+		DaoAuthenticationProvider authenticationProvider = new DaoAuthenticationProvider();
+		authenticationProvider.setUserDetailsService(userDetailsService());
+		authenticationProvider.setPasswordEncoder(passwordEncoder());
+		return authenticationProvider;
 	}
 	
-	
+	// 4. AuthenticationManager which is required for handling authentication in Spring Security, 
 	@Bean
 	AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
 		return authConfig.getAuthenticationManager();
-		
 	}
-	
-	
-	
+
+
+	// 5. Define a SecurityFilterChain to manage authentication & authorization
+	@Bean
+	SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+		System.err.println("Authorization securityFilterChain!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! ");
+		System.err.println("Initializing security configuration...");
+		http
+		.authorizeHttpRequests(auth-> auth
+				.requestMatchers("/api/authenticate").permitAll()  //bypass authentication for this endpoint
+				.requestMatchers("/api/user/**").hasAnyRole("USER","ADMIN")  // / User APIs accessible to ROLE_USER
+				.requestMatchers("/api/admin/**").hasRole("ADMIN") // Admin APIs accessible to ROLE_ADMIN
+				//.anyRequest().authenticated()  // this anyRequest().authenticated() will allow all URL once the User and password is given. To avoid this using anyRequest().denyAll()
+				.anyRequest().denyAll()
+				)
+		.httpBasic(Customizer.withDefaults()) // Updated to avoid deprecated method // Enables Basic Authentication
+		.csrf(csrf -> csrf.disable());  // Disable CSRF for testing purposes
+
+		System.err.println("Security configuration setup complete!");
+		return http.build();//SecurityFilterChain is interface
+	}
 
 
 }
